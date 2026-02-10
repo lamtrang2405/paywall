@@ -109,8 +109,14 @@ class _PaywallScreenState extends State<PaywallScreen>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isShort = size.height < 700;
-    final horizontalPadding = size.width * 0.06;
+    final screenHeight = size.height;
+    final screenWidth = size.width;
+
+    // Determine if we are on a very short device (iPhone SE etc)
+    final bool isUltraShort = screenHeight < 650;
+    final bool isShort = screenHeight < 750;
+
+    final horizontalPadding = screenWidth * 0.06;
 
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
 
@@ -123,79 +129,93 @@ class _PaywallScreenState extends State<PaywallScreen>
 
           // ── Content ──
           SafeArea(
-            child: Column(
-              children: [
-                // Top bar
-                _buildTopBar(),
-                // Scrollable content
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: horizontalPadding,
-                    ),
-                    child: Column(
-                      children: [
-                        SizedBox(height: size.height * 0.01),
-                        // Hero art grid
-                        _HeroArtGrid(
-                          shimmerController: _shimmerController,
-                          height: size.height * (isShort ? 0.3 : 0.28),
-                        ),
-                        SizedBox(height: size.height * 0.035),
-                        // Headline
-                        _buildHeadline(size.width),
-                        const SizedBox(height: 12),
-                        _buildSubheadline(size.width),
-                        const SizedBox(height: 12),
-                        // Feature pills
-                        _buildFeaturePills(),
-                        SizedBox(height: size.height * 0.03),
-                        // Plan cards
-                        if (_showAllOptions) ...[
-                          _PlanCard(
-                            isSelected: _selectedPlan == 1,
-                            label: 'YEARLY',
-                            price: widget.yearlyPrice,
-                            perWeek: widget.yearlyPerWeek,
-                            badge: 'BEST VALUE',
-                            savings: widget.yearlySavings,
-                            onTap: () => setState(() => _selectedPlan = 1),
-                          ),
-                          const SizedBox(height: 12),
-                          _PlanCard(
-                            isSelected: _selectedPlan == 0,
-                            label: 'WEEKLY',
-                            price: widget.weeklyPrice,
-                            perWeek: widget.weeklyPrice,
-                            onTap: () => setState(() => _selectedPlan = 0),
-                          ),
-                        ] else ...[
-                          _PlanCard(
-                            isSelected: true,
-                            label: 'YEARLY',
-                            price: widget.yearlyPrice,
-                            perWeek: widget.yearlyPerWeek,
-                            badge: 'BEST VALUE',
-                            savings: widget.yearlySavings,
-                            onTap: () {},
-                          ),
-                        ],
-                        SizedBox(height: size.height * 0.025),
-                        // CTA
-                        _CtaButton(
-                          shimmerController: _shimmerController,
-                          shakeAnimation: _shakeAnimation,
-                        ),
-                        SizedBox(height: size.height * 0.035),
-                        // New Footer
-                        _buildUnifiedFooter(),
-                        const SizedBox(height: 24),
-                      ],
-                    ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+              child: Column(
+                children: [
+                  // Top bar (Zero horizontal padding here because parent has it)
+                  _buildTopBar(),
+
+                  // Use Spacer/Flexible to distribute space proportionally
+                  SizedBox(height: screenHeight * 0.01),
+
+                  // Hero art grid - aggressive scaling for short screens
+                  _HeroArtGrid(
+                    shimmerController: _shimmerController,
+                    height:
+                        screenHeight *
+                        (isUltraShort ? 0.22 : (isShort ? 0.25 : 0.28)),
                   ),
-                ),
-              ],
+
+                  SizedBox(
+                    height: screenHeight * (isUltraShort ? 0.02 : 0.035),
+                  ),
+
+                  // Headline
+                  _buildHeadline(screenWidth, isUltraShort),
+
+                  SizedBox(height: isUltraShort ? 4 : 8),
+
+                  _buildSubheadline(screenWidth, isUltraShort),
+
+                  SizedBox(height: isUltraShort ? 8 : 12),
+
+                  // Feature pills
+                  _buildFeaturePills(isUltraShort),
+
+                  const Spacer(),
+
+                  // Plan cards
+                  if (_showAllOptions) ...[
+                    _PlanCard(
+                      isSelected: _selectedPlan == 1,
+                      label: 'YEARLY',
+                      price: widget.yearlyPrice,
+                      perWeek: widget.yearlyPerWeek,
+                      badge: 'BEST VALUE',
+                      savings: widget.yearlySavings,
+                      onTap: () => setState(() => _selectedPlan = 1),
+                      isCompact: isUltraShort,
+                    ),
+                    SizedBox(height: isUltraShort ? 8 : 12),
+                    _PlanCard(
+                      isSelected: _selectedPlan == 0,
+                      label: 'WEEKLY',
+                      price: widget.weeklyPrice,
+                      perWeek: widget.weeklyPrice,
+                      onTap: () => setState(() => _selectedPlan = 0),
+                      isCompact: isUltraShort,
+                    ),
+                  ] else ...[
+                    _PlanCard(
+                      isSelected: true,
+                      label: 'YEARLY',
+                      price: widget.yearlyPrice,
+                      perWeek: widget.yearlyPerWeek,
+                      badge: 'BEST VALUE',
+                      savings: widget.yearlySavings,
+                      onTap: () {},
+                      isCompact: isUltraShort,
+                    ),
+                  ],
+
+                  const Spacer(),
+
+                  // CTA
+                  _CtaButton(
+                    shimmerController: _shimmerController,
+                    shakeAnimation: _shakeAnimation,
+                    height: isUltraShort ? 48 : 56,
+                  ),
+
+                  SizedBox(height: screenHeight * (isUltraShort ? 0.02 : 0.04)),
+
+                  // New Footer
+                  _buildUnifiedFooter(isUltraShort),
+
+                  SizedBox(height: isUltraShort ? 12 : 24),
+                ],
+              ),
             ),
           ),
         ],
@@ -206,7 +226,7 @@ class _PaywallScreenState extends State<PaywallScreen>
   // ── Top bar ──
   Widget _buildTopBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -245,9 +265,11 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   // ── Headline ──
-  Widget _buildHeadline(double screenWidth) {
-    // Dynamic font size from 24 to 32
-    final double fontSize = (screenWidth * 0.075).clamp(24.0, 32.0);
+  Widget _buildHeadline(double screenWidth, bool isUltraShort) {
+    // Dynamic font size, smaller on short screens
+    final double baseSize = isUltraShort ? 22 : 28;
+    final double fontSize = (screenWidth * 0.075).clamp(baseSize, 32.0);
+
     return ShaderMask(
       shaderCallback: (bounds) => const LinearGradient(
         colors: [_Palette.accent, _Palette.accentAlt],
@@ -258,8 +280,8 @@ class _PaywallScreenState extends State<PaywallScreen>
         style: TextStyle(
           fontSize: fontSize,
           fontWeight: FontWeight.w900,
-          height: 1.15,
-          letterSpacing: 1.5,
+          height: 1.1,
+          letterSpacing: 1.2,
           color: Colors.white,
         ),
       ),
@@ -267,30 +289,35 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   // ── Subheadline ──
-  Widget _buildSubheadline(double screenWidth) {
-    final double fontSize = (screenWidth * 0.035).clamp(13.0, 16.0);
+  Widget _buildSubheadline(double screenWidth, bool isUltraShort) {
+    final double fontSize = (screenWidth * 0.035).clamp(12.0, 15.0);
     return Text(
       'Unlimited intimate audio stories & ASMR experiences',
       textAlign: TextAlign.center,
       style: TextStyle(
         fontSize: fontSize,
         color: _Palette.textSecondary.withOpacity(0.85),
-        height: 1.5,
+        height: 1.4,
       ),
     );
   }
 
   // ── Feature pills ──
-  Widget _buildFeaturePills() {
+  Widget _buildFeaturePills(bool isUltraShort) {
     final features = ['🎧 500+ Stories', '🔥 New Daily', '📥 Offline'];
+    final double fontSize = isUltraShort ? 10 : 12;
+
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 8,
-      runSpacing: 8,
+      runSpacing: 6,
       children: features
           .map(
             (f) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              padding: EdgeInsets.symmetric(
+                horizontal: isUltraShort ? 10 : 14,
+                vertical: isUltraShort ? 5 : 7,
+              ),
               decoration: BoxDecoration(
                 color: _Palette.surface.withOpacity(0.75),
                 borderRadius: BorderRadius.circular(20),
@@ -298,9 +325,9 @@ class _PaywallScreenState extends State<PaywallScreen>
               ),
               child: Text(
                 f,
-                style: const TextStyle(
+                style: TextStyle(
                   color: _Palette.textPrimary,
-                  fontSize: 12,
+                  fontSize: fontSize,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -311,25 +338,25 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   // ── New Unified Footer ──
-  Widget _buildUnifiedFooter() {
+  Widget _buildUnifiedFooter(bool isUltraShort) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _footerLink('Terms of Use', 'https://lucidfm.com/'),
+        _footerLink('Terms of Use', 'https://lucidfm.com/', isUltraShort),
         _footerDivider(),
-        _footerLink('Privacy Policy', 'https://lucidfm.com/'),
+        _footerLink('Privacy Policy', 'https://lucidfm.com/', isUltraShort),
       ],
     );
   }
 
-  Widget _footerLink(String text, String url) {
+  Widget _footerLink(String text, String url, bool isUltraShort) {
     return GestureDetector(
       onTap: () => _launchLegalUrl(url),
       child: Text(
         text,
         style: GoogleFonts.inter(
           color: _Palette.textSecondary.withOpacity(0.8),
-          fontSize: 11,
+          fontSize: isUltraShort ? 10 : 11,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -780,6 +807,7 @@ class _PlanCard extends StatelessWidget {
   final String? badge;
   final String? savings;
   final VoidCallback onTap;
+  final bool isCompact;
 
   const _PlanCard({
     required this.isSelected,
@@ -789,6 +817,7 @@ class _PlanCard extends StatelessWidget {
     this.badge,
     this.savings,
     required this.onTap,
+    this.isCompact = false,
   });
 
   @override
@@ -798,7 +827,10 @@ class _PlanCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        padding: EdgeInsets.symmetric(
+          horizontal: isCompact ? 16 : 20,
+          vertical: isCompact ? 12 : 18,
+        ),
         decoration: BoxDecoration(
           color: isSelected
               ? _Palette.accent.withOpacity(0.08)
@@ -945,9 +977,11 @@ class _RadioDot extends StatelessWidget {
 class _CtaButton extends StatelessWidget {
   final AnimationController shimmerController;
   final Animation<double> shakeAnimation;
+  final double height;
   const _CtaButton({
     required this.shimmerController,
     required this.shakeAnimation,
+    required this.height,
   });
 
   @override
@@ -971,7 +1005,7 @@ class _CtaButton extends StatelessWidget {
             },
             child: Container(
               width: double.infinity,
-              height: 56,
+              height: height,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 gradient: const LinearGradient(
