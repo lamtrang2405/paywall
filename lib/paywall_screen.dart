@@ -75,19 +75,10 @@ class _PaywallScreenState extends State<PaywallScreen>
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
-    _shakeAnimation =
-        TweenSequence<double>([
-          TweenSequenceItem(tween: Tween(begin: 0.0, end: -12.0), weight: 1),
-          TweenSequenceItem(tween: Tween(begin: -12.0, end: 12.0), weight: 1),
-          TweenSequenceItem(tween: Tween(begin: 12.0, end: -12.0), weight: 1),
-          TweenSequenceItem(tween: Tween(begin: -12.0, end: 10.0), weight: 1),
-          TweenSequenceItem(tween: Tween(begin: 10.0, end: -8.0), weight: 1),
-          TweenSequenceItem(tween: Tween(begin: -8.0, end: 6.0), weight: 1),
-          TweenSequenceItem(tween: Tween(begin: 6.0, end: -4.0), weight: 1),
-          TweenSequenceItem(tween: Tween(begin: -4.0, end: 0.0), weight: 1),
-        ]).animate(
-          CurvedAnimation(parent: _shakeController, curve: Curves.easeInOut),
-        );
+    _shakeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _shakeController, curve: Curves.linear));
   }
 
   void _startShakeCycle() async {
@@ -964,8 +955,16 @@ class _CtaButton extends StatelessWidget {
     return AnimatedBuilder(
       animation: Listenable.merge([shimmerController, shakeAnimation]),
       builder: (context, child) {
+        // Smooth sine-wave shake with damping
+        // v goes from 0 to 1 over 1.5s
+        final v = shakeAnimation.value;
+        // High frequency (e.g., 6 cycles/shake)
+        final double shakeOffset = v > 0
+            ? math.sin(v * math.pi * 12) * (15 * (1 - v))
+            : 0;
+
         return Transform.translate(
-          offset: Offset(shakeAnimation.value, 0),
+          offset: Offset(shakeOffset, 0),
           child: GestureDetector(
             onTap: () {
               // Handle purchase
