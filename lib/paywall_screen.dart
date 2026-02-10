@@ -117,6 +117,10 @@ class _PaywallScreenState extends State<PaywallScreen>
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isShort = size.height < 700;
+    final horizontalPadding = size.width * 0.06;
+
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
 
     return Scaffold(
@@ -136,21 +140,26 @@ class _PaywallScreenState extends State<PaywallScreen>
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
+                    ),
                     child: Column(
                       children: [
-                        const SizedBox(height: 8),
+                        SizedBox(height: size.height * 0.01),
                         // Hero art grid
-                        _HeroArtGrid(shimmerController: _shimmerController),
-                        const SizedBox(height: 32),
+                        _HeroArtGrid(
+                          shimmerController: _shimmerController,
+                          height: size.height * (isShort ? 0.3 : 0.28),
+                        ),
+                        SizedBox(height: size.height * 0.035),
                         // Headline
-                        _buildHeadline(),
+                        _buildHeadline(size.width),
                         const SizedBox(height: 12),
-                        _buildSubheadline(),
-                        const SizedBox(height: 8),
+                        _buildSubheadline(size.width),
+                        const SizedBox(height: 12),
                         // Feature pills
                         _buildFeaturePills(),
-                        const SizedBox(height: 28),
+                        SizedBox(height: size.height * 0.03),
                         // Plan cards
                         if (_showAllOptions) ...[
                           _PlanCard(
@@ -181,13 +190,13 @@ class _PaywallScreenState extends State<PaywallScreen>
                             onTap: () {},
                           ),
                         ],
-                        const SizedBox(height: 24),
+                        SizedBox(height: size.height * 0.025),
                         // CTA
                         _CtaButton(
                           shimmerController: _shimmerController,
                           shakeAnimation: _shakeAnimation,
                         ),
-                        const SizedBox(height: 28),
+                        SizedBox(height: size.height * 0.035),
                         // New Footer
                         _buildUnifiedFooter(),
                         const SizedBox(height: 24),
@@ -245,16 +254,18 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   // ── Headline ──
-  Widget _buildHeadline() {
+  Widget _buildHeadline(double screenWidth) {
+    // Dynamic font size from 24 to 32
+    final double fontSize = (screenWidth * 0.075).clamp(24.0, 32.0);
     return ShaderMask(
       shaderCallback: (bounds) => const LinearGradient(
         colors: [_Palette.accent, _Palette.accentAlt],
       ).createShader(bounds),
-      child: const Text(
+      child: Text(
         'UNLOCK YOUR\nDEEPEST DESIRES',
         textAlign: TextAlign.center,
         style: TextStyle(
-          fontSize: 28,
+          fontSize: fontSize,
           fontWeight: FontWeight.w900,
           height: 1.15,
           letterSpacing: 1.5,
@@ -265,12 +276,13 @@ class _PaywallScreenState extends State<PaywallScreen>
   }
 
   // ── Subheadline ──
-  Widget _buildSubheadline() {
+  Widget _buildSubheadline(double screenWidth) {
+    final double fontSize = (screenWidth * 0.035).clamp(13.0, 16.0);
     return Text(
       'Unlimited intimate audio stories & ASMR experiences',
       textAlign: TextAlign.center,
       style: TextStyle(
-        fontSize: 14,
+        fontSize: fontSize,
         color: _Palette.textSecondary.withOpacity(0.85),
         height: 1.5,
       ),
@@ -408,7 +420,8 @@ class _AnimatedOrbBackground extends StatelessWidget {
 // ──────────────────────────────────────────────
 class _HeroArtGrid extends StatefulWidget {
   final AnimationController shimmerController;
-  const _HeroArtGrid({required this.shimmerController});
+  final double height;
+  const _HeroArtGrid({required this.shimmerController, required this.height});
 
   @override
   State<_HeroArtGrid> createState() => _HeroArtGridState();
@@ -466,8 +479,12 @@ class _HeroArtGridState extends State<_HeroArtGrid>
 
   @override
   Widget build(BuildContext context) {
+    final double gridHeight = widget.height;
+    // Scale tags based on height
+    final double tagScale = (gridHeight / 260.0).clamp(0.8, 1.2);
+
     return SizedBox(
-      height: 260,
+      height: gridHeight,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: Stack(
@@ -545,44 +562,76 @@ class _HeroArtGridState extends State<_HeroArtGrid>
             ),
             // ── FLOATING TAGS ──
             Positioned(
-              top: 25,
+              top: gridHeight * 0.1,
               left: 20,
-              child: _floatingTag('Romance', isGradient: true, scale: 0.85),
+              child: _floatingTag(
+                'Romance',
+                isGradient: true,
+                scale: 0.85 * tagScale,
+              ),
             ),
             Positioned(
-              top: 45,
+              top: gridHeight * 0.17,
               right: 25,
-              child: _floatingTag('Fantasy', isGradient: false, scale: 0.8),
+              child: _floatingTag(
+                'Fantasy',
+                isGradient: false,
+                scale: 0.8 * tagScale,
+              ),
             ),
             Positioned(
-              top: 100,
+              top: gridHeight * 0.38,
               left: 130,
-              child: _floatingTag('🔥 M4F', isGradient: true, scale: 1.0),
+              child: _floatingTag(
+                '🔥 M4F',
+                isGradient: true,
+                scale: 1.0 * tagScale,
+              ),
             ),
             Positioned(
-              bottom: 110,
+              bottom: gridHeight * 0.42,
               left: 35,
-              child: _floatingTag('Praise', isGradient: false, scale: 0.9),
+              child: _floatingTag(
+                'Praise',
+                isGradient: false,
+                scale: 0.9 * tagScale,
+              ),
             ),
             Positioned(
-              bottom: 75,
+              bottom: gridHeight * 0.28,
               right: 35,
-              child: _floatingTag('F4M', isGradient: false, scale: 0.9),
+              child: _floatingTag(
+                'F4M',
+                isGradient: false,
+                scale: 0.9 * tagScale,
+              ),
             ),
             Positioned(
-              bottom: 40,
+              bottom: gridHeight * 0.15,
               left: 150,
-              child: _floatingTag('Comfort', isGradient: false, scale: 0.8),
+              child: _floatingTag(
+                'Comfort',
+                isGradient: false,
+                scale: 0.8 * tagScale,
+              ),
             ),
             Positioned(
-              top: 75,
+              top: gridHeight * 0.28,
               left: 80,
-              child: _floatingTag('Gentle', isGradient: false, scale: 0.75),
+              child: _floatingTag(
+                'Gentle',
+                isGradient: false,
+                scale: 0.75 * tagScale,
+              ),
             ),
             Positioned(
-              bottom: 125,
+              bottom: gridHeight * 0.48,
               right: 15,
-              child: _floatingTag('Roleplay', isGradient: false, scale: 0.75),
+              child: _floatingTag(
+                'Roleplay',
+                isGradient: false,
+                scale: 0.75 * tagScale,
+              ),
             ),
           ],
         ),
