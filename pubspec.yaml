@@ -1,0 +1,27 @@
+name: hehehe
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.10.8
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_fonts: ^6.2.1
+  url_launcher: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/art_1.jpg
+    - assets/images/art_2.jpg
+    - assets/images/art_3.jpg
+    - assets/images/art_4.jpg
+    - assets/images/art_5.jpg
